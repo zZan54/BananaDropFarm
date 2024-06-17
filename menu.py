@@ -10,14 +10,18 @@ import webbrowser
 customtkinter.set_appearance_mode("System")
 customtkinter.set_default_color_theme("blue")
 
-pm = pymem.Pymem("Banana.exe")
-gameModule = module_from_name(pm.process_handle, "GameAssembly.dll").lpBaseOfDll
+try:
+    game = pymem.Pymem("Banana.exe")
+    gameModule = module_from_name(game.process_handle, "GameAssembly.dll").lpBaseOfDll
+except Exception:
+    print("Error: Could not find the game process. Make sure the game is running.")
+    exit()
 
 def GetPtrAddr(base, offsets):
-    addr = pm.read_longlong(base)
+    addr = game.read_longlong(base)
     for offset in offsets:
         if offset != offsets[-1]:
-            addr = pm.read_longlong(addr + offset)
+            addr = game.read_longlong(addr + offset)
     return addr + offsets[-1]
 
 app = customtkinter.CTk()
@@ -31,18 +35,23 @@ except Exception:
     pass
 
 def changescore():
-    score = int(scorevalue.get())
-    pm.write_int(GetPtrAddr(gameModule + 0x00EA7648, [0x4A8, 0x78, 0x48, 0xB8, 0x88, 0x60, 0x28]), score)
+    new_score = int(scorevalue.get())
+    try:
+        game.write_int(GetPtrAddr(gameModule + 0x00EA7648, [0x4A8, 0x78, 0x48, 0xB8, 0x88, 0x60, 0x28]), new_score)
+    except Exception:
+        print("An error occurred while trying to set the score.")
+        exit()
 
 def botidlecheckbypass():
     def update_score():
         try:
             while botidlecheckbypass_var.get():
-                current_score = pm.read_int(GetPtrAddr(gameModule + 0x00EA7648, [0x4A8, 0x78, 0x48, 0xB8, 0x88, 0x60, 0x28]))
+                current_score = game.read_int(GetPtrAddr(gameModule + 0x00EA7648, [0x4A8, 0x78, 0x48, 0xB8, 0x88, 0x60, 0x28]))
                 new_score = current_score + random.randint(1, 25)
-                pm.write_int(GetPtrAddr(gameModule + 0x00EA7648, [0x4A8, 0x78, 0x48, 0xB8, 0x88, 0x60, 0x28]), new_score)
+                game.write_int(GetPtrAddr(gameModule + 0x00EA7648, [0x4A8, 0x78, 0x48, 0xB8, 0x88, 0x60, 0x28]), new_score)
                 time.sleep(2)
         except Exception:
+            print("An error occurred while trying to bypass the bot idle check.")
             pass
 
     thread = threading.Thread(target=update_score)
