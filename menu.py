@@ -32,7 +32,11 @@ except Exception:
 
 def changescore():
     score = int(scorevalue.get())
-    pm.write_int(GetPtrAddr(gameModule + 0x00EA7648, [0x4A8, 0x78, 0x48, 0xB8, 0x88, 0x60, 0x28]), score)
+    try:
+        pm.write_int(GetPtrAddr(gameModule + 0x00EA7648, [0x4A8, 0x78, 0x48, 0xB8, 0x88, 0x60, 0x28]), score)
+    except Exception:
+        print("An error occurred while trying to set the score.")
+        break
 
 def botidlecheckbypass():
     def update_score():
