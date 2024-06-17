@@ -10,8 +10,12 @@ import webbrowser
 customtkinter.set_appearance_mode("System")
 customtkinter.set_default_color_theme("blue")
 
-game = pymem.Pymem("Banana.exe")
-gameModule = module_from_name(game.process_handle, "GameAssembly.dll").lpBaseOfDll
+try:
+    game = pymem.Pymem("Banana.exe")
+    gameModule = module_from_name(game.process_handle, "GameAssembly.dll").lpBaseOfDll
+except Exception:
+    print("Error: Could not find the game process. Make sure the game is running.")
+    exit()
 
 def GetPtrAddr(base, offsets):
     addr = game.read_longlong(base)
