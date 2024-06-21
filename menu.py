@@ -43,16 +43,45 @@ def changescore():
         exit()
 
 def botidlecheckbypass():
-    def update_score():
-        try:
-            while botidlecheckbypass_var.get():
-                current_score = game.read_int(GetPtrAddr(gameModule + 0x00EA7648, [0x4A8, 0x78, 0x48, 0xB8, 0x88, 0x60, 0x28]))
-                new_score = current_score + random.randint(1, 25)
-                game.write_int(GetPtrAddr(gameModule + 0x00EA7648, [0x4A8, 0x78, 0x48, 0xB8, 0x88, 0x60, 0x28]), new_score)
-                time.sleep(2)
-        except Exception:
-            print("An error occurred while trying to bypass the bot idle check.")
-            pass
+    if botidlecheckbypassdelay_var.get() != None:
+        botidlecheckbypassdelay = float(botidlecheckbypassdelay_var.get())
+    else:
+        botidlecheckbypassdelay = 2.0
+
+    if botidlecheckbypassmethod_var.get() == "Random increment":
+        def update_score():
+            try:
+                while botidlecheckbypass_var.get():
+                    current_score = game.read_int(GetPtrAddr(gameModule + 0x00EA7648, [0x4A8, 0x78, 0x48, 0xB8, 0x88, 0x60, 0x28]))
+                    new_score = current_score + random.randint(1, 25)
+                    game.write_int(GetPtrAddr(gameModule + 0x00EA7648, [0x4A8, 0x78, 0x48, 0xB8, 0x88, 0x60, 0x28]), new_score)
+                    time.sleep(botidlecheckbypassdelay)
+            except Exception:
+                print("An error occurred while trying to bypass the bot idle check.")
+                pass
+
+    elif botidlecheckbypassmethod_var.get() == "Random value":
+        def update_score():
+            try:
+                while botidlecheckbypass_var.get():
+                    new_score = random.randint(1, 1000000)
+                    game.write_int(GetPtrAddr(gameModule + 0x00EA7648, [0x4A8, 0x78, 0x48, 0xB8, 0x88, 0x60, 0x28]), new_score)
+                    time.sleep(botidlecheckbypassdelay)
+            except Exception:
+                print("An error occurred while trying to bypass the bot idle check.")
+                pass
+
+    elif botidlecheckbypassmethod_var.get() == "Increment":
+        def update_score():
+            try:
+                while botidlecheckbypass_var.get():
+                    current_score = game.read_int(GetPtrAddr(gameModule + 0x00EA7648, [0x4A8, 0x78, 0x48, 0xB8, 0x88, 0x60, 0x28]))
+                    new_score = current_score + 1
+                    game.write_int(GetPtrAddr(gameModule + 0x00EA7648, [0x4A8, 0x78, 0x48, 0xB8, 0x88, 0x60, 0x28]), new_score)
+                    time.sleep(botidlecheckbypassdelay)
+            except Exception:
+                print("An error occurred while trying to bypass the bot idle check.")
+                pass
 
     thread = threading.Thread(target=update_score)
     thread.daemon = True
@@ -77,18 +106,34 @@ scorevalue.pack(side="left", padx=5)
 setscore = customtkinter.CTkButton(master=score, text="Set Score", command=changescore)
 setscore.pack(side="left", padx=5)
 
+botidlecheckbypassall = customtkinter.CTkFrame(master=options.tab("Cheat"))
+botidlecheckbypassall.pack(side="top", padx=20, pady=8)
+
 botidlecheckbypass_var = customtkinter.BooleanVar(value=False)
-botidlecheckbypass = customtkinter.CTkCheckBox(master=options.tab("Cheat"), text="Bot Idle Check Bypass", command=botidlecheckbypass, variable=botidlecheckbypass_var)
-botidlecheckbypass.pack(padx=20, pady=8, anchor=customtkinter.CENTER)
+botidlecheckbypass = customtkinter.CTkCheckBox(master=botidlecheckbypassall, text="Bot Idle Check Bypass", command=botidlecheckbypass, variable=botidlecheckbypass_var)
+botidlecheckbypass.pack(side="left", padx=5)
+
+botidlecheckbypassmethod_var = customtkinter.StringVar(value="Random increment")
+botidlecheckbypassmethod = customtkinter.CTkComboBox(master=botidlecheckbypassall, values=["Random increment", "Random value", "Increment"], variable=botidlecheckbypassmethod_var, width=150)
+botidlecheckbypassmethod.pack(side="left", padx=5)
+botidlecheckbypassmethod_var.set("Random increment")
+
+botidlecheckbypassdelay_var = customtkinter.StringVar(value='2')
+botidlecheckbypassdelay = customtkinter.CTkComboBox(master=botidlecheckbypassall, values=['0.5', '1', '2', '5', '10', '15', '30', '45', '60', '120', '180', '300'], variable=botidlecheckbypassdelay_var, width=60)
+botidlecheckbypassdelay.pack(side="left", padx=5)
+botidlecheckbypassdelay_var.set('2')
 
 scorechangerinfo = customtkinter.CTkLabel(master=options.tab("Info"), text="Score Changer - changes score", fg_color="transparent", text_color="white")
 scorechangerinfo.pack(padx=20, pady=8, anchor=customtkinter.CENTER)
 
-botidlecheckbypassinfo = customtkinter.CTkLabel(master=options.tab("Info"), text="Bot Idle Check Bypass - bypasses the bot idle check by adding a random \nvalue from 1 to 25 to the current score every 2 seconds", fg_color="transparent", text_color="white")
+botidlecheckbypassinfo = customtkinter.CTkLabel(master=options.tab("Info"), text="Bot Idle Check Bypass - bypasses the bot idle check depending on \nwhat method you chose", fg_color="transparent", text_color="white")
 botidlecheckbypassinfo.pack(padx=20, pady=8, anchor=customtkinter.CENTER)
 
-note = customtkinter.CTkLabel(master=options.tab("Info"), text="Note: You need to click for the score to update", fg_color="transparent", text_color="white")
-note.pack(padx=20, pady=8, anchor=customtkinter.CENTER)
+botidlecheckbypassmethodsinfo = customtkinter.CTkLabel(master=options.tab("Info"), text="Bypass methods: \nRandom Increment - adds a random number from 1 to 25 to the current score \nRandom value - changes the current score to a random value \nIncrement - adds 1 to the current score", fg_color="transparent", text_color="white")
+botidlecheckbypassmethodsinfo.pack(padx=20, pady=8, anchor=customtkinter.CENTER)
+
+notes = customtkinter.CTkLabel(master=options.tab("Info"), text=f"Notes: \nThe chosen method is activated every few seconds, depending on the delay you choose. \nDefault delay is 2 seconds. You need to click for the score to update.", fg_color="transparent", text_color="white")
+notes.pack(padx=20, pady=8, anchor=customtkinter.CENTER)
 
 githublink = customtkinter.CTkLabel(app, text="github.com/zZan54", fg_color="transparent", text_color="white")
 githublink.place(x=220, y=310)
