@@ -37,7 +37,7 @@ except Exception:
 def changescore():
     new_score = int(scorevalue.get())
     try:
-        game.write_int(GetPtrAddr(gameModule + 0x00EA7648, [0x4A8, 0x78, 0x48, 0xB8, 0x88, 0x60, 0x28]), new_score)
+        game.write_int(GetPtrAddr(gameModule + 0x00E5C150, [0x40, 0x318, 0xB8, 0x0, 0x50, 0x10, 0x30]), new_score)
     except Exception:
         print("An error occurred while trying to set the score.")
         exit()
@@ -52,9 +52,9 @@ def botidlecheckbypass():
         def update_score():
             try:
                 while botidlecheckbypass_var.get():
-                    current_score = game.read_int(GetPtrAddr(gameModule + 0x00EA7648, [0x4A8, 0x78, 0x48, 0xB8, 0x88, 0x60, 0x28]))
+                    current_score = game.read_int(GetPtrAddr(gameModule + 0x00E5C150, [0x40, 0x318, 0xB8, 0x0, 0x50, 0x10, 0x30]))
                     new_score = current_score + random.randint(1, 25)
-                    game.write_int(GetPtrAddr(gameModule + 0x00EA7648, [0x4A8, 0x78, 0x48, 0xB8, 0x88, 0x60, 0x28]), new_score)
+                    game.write_int(GetPtrAddr(gameModule + 0x00E5C150, [0x40, 0x318, 0xB8, 0x0, 0x50, 0x10, 0x30]), new_score)
                     time.sleep(botidlecheckbypassdelay)
             except Exception:
                 print("An error occurred while trying to bypass the bot idle check.")
@@ -65,7 +65,7 @@ def botidlecheckbypass():
             try:
                 while botidlecheckbypass_var.get():
                     new_score = random.randint(1, 1000000)
-                    game.write_int(GetPtrAddr(gameModule + 0x00EA7648, [0x4A8, 0x78, 0x48, 0xB8, 0x88, 0x60, 0x28]), new_score)
+                    game.write_int(GetPtrAddr(gameModule + 0x00E5C150, [0x40, 0x318, 0xB8, 0x0, 0x50, 0x10, 0x30]), new_score)
                     time.sleep(botidlecheckbypassdelay)
             except Exception:
                 print("An error occurred while trying to bypass the bot idle check.")
@@ -75,9 +75,9 @@ def botidlecheckbypass():
         def update_score():
             try:
                 while botidlecheckbypass_var.get():
-                    current_score = game.read_int(GetPtrAddr(gameModule + 0x00EA7648, [0x4A8, 0x78, 0x48, 0xB8, 0x88, 0x60, 0x28]))
+                    current_score = game.read_int(GetPtrAddr(gameModule + 0x00E5C150, [0x40, 0x318, 0xB8, 0x0, 0x50, 0x10, 0x30]))
                     new_score = current_score + 1
-                    game.write_int(GetPtrAddr(gameModule + 0x00EA7648, [0x4A8, 0x78, 0x48, 0xB8, 0x88, 0x60, 0x28]), new_score)
+                    game.write_int(GetPtrAddr(gameModule + 0x00E5C150, [0x40, 0x318, 0xB8, 0x0, 0x50, 0x10, 0x30]), new_score)
                     time.sleep(botidlecheckbypassdelay)
             except Exception:
                 print("An error occurred while trying to bypass the bot idle check.")
