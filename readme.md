@@ -18,13 +18,19 @@ You can also install the dependencies listed in `requirements.txt`.
 
 ## Features
 - **Score Changer**: Changes the score.
+
 - **Bot Idle Check Bypass**: Bypasses the bot idle check.
     - **Bypass Methods**:
         - **Random increment** - Adds a random number from 1 to 25 to the current score.
         - **Random value** - Changes the current score to a random value.
         - **Increment** - Adds 1 to the current score.
     - **Delay** - Allows you to add a custom delay between executing selected method.
-- **Note**: You need to click for the score to update.
+
+- **Spoof Cps**: Spoofes the cps.
+    - **Spoof Methods**:
+        - **Random** - Sets a random cps value.
+        - **Random normal** - Sets a random cps value from 1 to 20.
+        - **Static** - Sets a static cps value of 15.
 
 ## Contributing
 The project is open to contributors. Feel free to open an issue or submit a pull request.
