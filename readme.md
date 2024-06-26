@@ -4,7 +4,7 @@
 Banana Drop Farm is a game cheat for game Banana. This project can change the score in the game and bypass the idle bot check.
 
 ## Showcase
-![Showcase Image](/img/menu_v1.1.png)
+![Showcase Image](/img/menu_v1.2.png)
 
 ## Installation
 For users who want to build the menu to a .exe, run `build.bat`. For users who want to use the source code, simply run `setup.bat` and then `python menu.py`.
