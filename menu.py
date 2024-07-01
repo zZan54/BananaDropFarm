@@ -12,7 +12,7 @@ customtkinter.set_default_color_theme("blue")
 
 try:
     game = pymem.Pymem("Banana.exe")
-    gameModule = module_from_name(game.process_handle, "GameAssembly.dll").lpBaseOfDll
+    gameModule = module_from_name(game.process_handle, "UnityPlayer.dll").lpBaseOfDll
 except Exception:
     print("Error: Could not find the game process. Make sure the game is running.")
     exit()
@@ -34,8 +34,8 @@ try:
 except Exception:
     pass
 
-score_addr = gameModule + 0x00E68E00
-score_offsets = [0x90, 0x78, 0x8F8, 0x28, 0x20, 0xB8, 0x830]
+score_addr = gameModule + 0x01CFD6C8
+score_offsets = [0x20, 0xA68, 0x18, 0xA0, 0x90, 0x28, 0x30]
 
 def changescore():
     new_score = int(scorevalue.get())
