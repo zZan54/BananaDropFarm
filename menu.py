@@ -1,11 +1,42 @@
-from colorsys import hsv_to_rgb
-from pymem.process import *
 import time
 import pymem
+import ctypes
 import random
 import threading
 import customtkinter
 import webbrowser
+
+from pystyle import Colorate, Colors, Center
+from colorsys import hsv_to_rgb
+from pymem.process import *
+
+debug = True
+
+class DebugLog:
+    def __init__(self, debug=debug):
+        self.debug = debug
+
+    def _log(self, message):
+        if self.debug:
+            print(message)
+        else:
+            pass
+    
+    def info(self, message):
+        self._log(f"{Colors.green}[+] {Colors.reset}{message}")
+    
+    def error(self, message):
+        self._log(f"{Colors.red}[-] {Colors.reset}{message}")
+    
+    def warning(self, message):
+        self._log(f"{Colors.cyan}[!] {Colors.reset}{message}")
+
+bananadropfarmlog = DebugLog()
+
+ctypes.windll.kernel32.SetConsoleTitleW("Banana Drop Farm v1.3 | github.com/zZan54")
+
+bananadropfarm = Center.XCenter("\nBanana Drop Farm v1.3\n")
+print(Colorate.Horizontal(Colors.yellow_to_red, bananadropfarm, 1))
 
 customtkinter.set_appearance_mode("System")
 customtkinter.set_default_color_theme("blue")
@@ -13,8 +44,9 @@ customtkinter.set_default_color_theme("blue")
 try:
     game = pymem.Pymem("Banana.exe")
     gameModule = module_from_name(game.process_handle, "UnityPlayer.dll").lpBaseOfDll
+    bananadropfarmlog.info("Successfully found the game process.")
 except Exception:
-    print("Error: Could not find the game process. Make sure the game is running.")
+    bananadropfarmlog.error("An error occurred while trying to find the game process. Exiting...")
     exit()
 
 def GetPtrAddr(base, offsets):
@@ -31,7 +63,9 @@ app.resizable(False, False)
 
 try:
     app.iconbitmap("banana.ico")
+    bananadropfarmlog.info("Successfully set the app icon.")
 except Exception:
+    bananadropfarmlog.warning("An error occurred while trying to set the app icon. Using the default icon.")
     pass
 
 score_addr = gameModule + 0x01CFD6C8
@@ -41,8 +75,9 @@ def changescore():
     new_score = int(scorevalue.get())
     try:
         game.write_int(GetPtrAddr(score_addr, score_offsets), new_score)
-    except Exception as e:
-        print("An error occurred while trying to set the score.", e)
+        bananadropfarmlog.info(f"Successfully set the score to {new_score}.")
+    except Exception:
+        bananadropfarmlog.error(f"An error occurred while trying to set the score to {new_score}.")
         exit()
 
 def botidlecheckbypass():
@@ -54,36 +89,39 @@ def botidlecheckbypass():
     if botidlecheckbypassmethod_var.get() == "Random increment":
         def update_score():
             try:
+                bananadropfarmlog.info(f"Bot idle check bypass has been activated | Method: Random increment | Delay: {botidlecheckbypassdelay} seconds")
                 while botidlecheckbypass_var.get():
                     current_score = game.read_int(GetPtrAddr(score_addr, score_offsets))
                     new_score = current_score + random.randint(1, 25)
                     game.write_int(GetPtrAddr(score_addr, score_offsets), new_score)
                     time.sleep(botidlecheckbypassdelay)
             except Exception:
-                print("An error occurred while trying to bypass the bot idle check.")
+                bananadropfarmlog.error("An error occurred while trying to bypass the bot idle check.")
                 pass
 
     elif botidlecheckbypassmethod_var.get() == "Random value":
         def update_score():
             try:
+                bananadropfarmlog.info(f"Bot idle check bypass has been activated | Method: Random value | Delay: {botidlecheckbypassdelay} seconds")
                 while botidlecheckbypass_var.get():
                     new_score = random.randint(1, 1000000)
                     game.write_int(GetPtrAddr(score_addr, score_offsets), new_score)
                     time.sleep(botidlecheckbypassdelay)
             except Exception:
-                print("An error occurred while trying to bypass the bot idle check.")
+                bananadropfarmlog.error("An error occurred while trying to bypass the bot idle check.")
                 pass
 
     elif botidlecheckbypassmethod_var.get() == "Increment":
         def update_score():
             try:
+                bananadropfarmlog.info(f"Bot idle check bypass has been activated | Method: Increment | Delay: {botidlecheckbypassdelay} seconds")
                 while botidlecheckbypass_var.get():
                     current_score = game.read_int(GetPtrAddr(score_addr, score_offsets))
                     new_score = current_score + 1
                     game.write_int(GetPtrAddr(score_addr, score_offsets), new_score)
                     time.sleep(botidlecheckbypassdelay)
             except Exception:
-                print("An error occurred while trying to bypass the bot idle check.")
+                bananadropfarmlog.error("An error occurred while trying to bypass the bot idle check.")
                 pass
 
     thread = threading.Thread(target=update_score)
@@ -99,33 +137,36 @@ def spoofcps():
     if spoofcpsmethod_var.get() == "Random":
         def update_cps():
             try:
+                bananadropfarmlog.info(f"Cps spoof has been activated | Method: Random | Delay: {spoofcpsdelay} seconds")
                 while spoofcps_var.get():
                     new_cps = random.randint(1, 1000000)
                     game.write_int(GetPtrAddr(score_addr, score_offsets) + 0x10, new_cps)
                     time.sleep(spoofcpsdelay)
             except Exception:
-                print("An error occurred while trying to spoof cps.")
+                bananadropfarmlog.error("An error occurred while trying to spoof cps.")
                 pass
 
     elif spoofcpsmethod_var.get() == "Random normal":
         def update_cps():
             try:
+                bananadropfarmlog.info(f"Cps spoof has been activated | Method: Random normal | Delay: {spoofcpsdelay} seconds")
                 while spoofcps_var.get():
                     new_cps = random.randint(1, 20)
                     game.write_int(GetPtrAddr(score_addr, score_offsets) + 0x10, new_cps)
                     time.sleep(spoofcpsdelay)
             except Exception:
-                print("An error occurred while trying to spoof cps.")
+                bananadropfarmlog.error("An error occurred while trying to spoof cps.")
                 pass
 
     elif spoofcpsmethod_var.get() == "Static":
         def update_cps():
             try:
+                bananadropfarmlog.info(f"Cps spoof has been activated | Method: Static | Delay: {spoofcpsdelay} seconds")
                 while spoofcps_var.get():
                     game.write_int(GetPtrAddr(score_addr, score_offsets) + 0x10, 15)
                     time.sleep(spoofcpsdelay)
             except Exception:
-                print("An error occurred while trying to spoof cps.")
+                bananadropfarmlog.error("An error occurred while trying to spoof cps.")
                 pass
 
     thread = threading.Thread(target=update_cps)
