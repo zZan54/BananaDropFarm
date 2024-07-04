@@ -89,7 +89,6 @@ def botidlecheckbypass():
     if botidlecheckbypassmethod_var.get() == "Random increment":
         def update_score():
             try:
-                bananadropfarmlog.info(f"Bot idle check bypass has been activated | Method: Random increment | Delay: {botidlecheckbypassdelay} seconds")
                 while botidlecheckbypass_var.get():
                     current_score = game.read_int(GetPtrAddr(score_addr, score_offsets))
                     new_score = current_score + random.randint(1, 25)
@@ -102,7 +101,6 @@ def botidlecheckbypass():
     elif botidlecheckbypassmethod_var.get() == "Random value":
         def update_score():
             try:
-                bananadropfarmlog.info(f"Bot idle check bypass has been activated | Method: Random value | Delay: {botidlecheckbypassdelay} seconds")
                 while botidlecheckbypass_var.get():
                     new_score = random.randint(1, 1000000)
                     game.write_int(GetPtrAddr(score_addr, score_offsets), new_score)
@@ -114,7 +112,6 @@ def botidlecheckbypass():
     elif botidlecheckbypassmethod_var.get() == "Increment":
         def update_score():
             try:
-                bananadropfarmlog.info(f"Bot idle check bypass has been activated | Method: Increment | Delay: {botidlecheckbypassdelay} seconds")
                 while botidlecheckbypass_var.get():
                     current_score = game.read_int(GetPtrAddr(score_addr, score_offsets))
                     new_score = current_score + 1
@@ -123,6 +120,11 @@ def botidlecheckbypass():
             except Exception:
                 bananadropfarmlog.error("An error occurred while trying to bypass the bot idle check.")
                 pass
+
+    if botidlecheckbypass_var.get():
+        bananadropfarmlog.info(f"Bot idle check bypass has been activated | Method: {botidlecheckbypassmethod_var.get()} | Delay: {botidlecheckbypassdelay} seconds")
+    else:
+        bananadropfarmlog.info("Bot idle check bypass has been deactivated")
 
     thread = threading.Thread(target=update_score)
     thread.daemon = True
@@ -137,7 +139,6 @@ def spoofcps():
     if spoofcpsmethod_var.get() == "Random":
         def update_cps():
             try:
-                bananadropfarmlog.info(f"Cps spoof has been activated | Method: Random | Delay: {spoofcpsdelay} seconds")
                 while spoofcps_var.get():
                     new_cps = random.randint(1, 1000000)
                     game.write_int(GetPtrAddr(score_addr, score_offsets) + 0x10, new_cps)
@@ -149,7 +150,6 @@ def spoofcps():
     elif spoofcpsmethod_var.get() == "Random normal":
         def update_cps():
             try:
-                bananadropfarmlog.info(f"Cps spoof has been activated | Method: Random normal | Delay: {spoofcpsdelay} seconds")
                 while spoofcps_var.get():
                     new_cps = random.randint(1, 20)
                     game.write_int(GetPtrAddr(score_addr, score_offsets) + 0x10, new_cps)
@@ -161,13 +161,17 @@ def spoofcps():
     elif spoofcpsmethod_var.get() == "Static":
         def update_cps():
             try:
-                bananadropfarmlog.info(f"Cps spoof has been activated | Method: Static | Delay: {spoofcpsdelay} seconds")
                 while spoofcps_var.get():
                     game.write_int(GetPtrAddr(score_addr, score_offsets) + 0x10, 15)
                     time.sleep(spoofcpsdelay)
             except Exception:
                 bananadropfarmlog.error("An error occurred while trying to spoof cps.")
                 pass
+
+    if spoofcps_var.get():
+        bananadropfarmlog.info(f"Cps spoof has been activated | Method: {spoofcpsmethod_var.get()} | Delay: {spoofcpsdelay} seconds")
+    else:
+        bananadropfarmlog.info("Cps spoof has been deactivated")
 
     thread = threading.Thread(target=update_cps)
     thread.daemon = True
