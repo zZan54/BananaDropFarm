@@ -1,0 +1,8 @@
+botidlecheckbypass:
+  delay: '2'
+  enabled: true
+  method: Random increment
+spoofcps:
+  delay: '0.5'
+  enabled: true
+  method: Random normal

@@ -1,3 +1,5 @@
 pymem==1.13.1
+PyYAML==5.4.1
+psutil==5.9.8
 customtkinter==5.2.2
 pyinstaller
