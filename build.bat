@@ -29,6 +29,17 @@ if exist "dist\BananaDropFarm.exe" (
         exit /b 1
     ) else (
         echo Successfully moved the executable to the current directory.
+        
+        echo Deleting the dist folder...
+        rmdir /s /q dist
+
+        echo Deleting the build folder...
+        rmdir /s /q build
+
+        echo Deleting the .spec file...
+        del /q BananaDropFarm.spec
+        
+        echo Cleanup completed.
     )
 ) else (
     echo The executable was not found in the dist folder.
