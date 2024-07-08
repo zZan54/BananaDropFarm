@@ -7,11 +7,11 @@ import random
 import threading
 import customtkinter
 import webbrowser
-import io
+import os
 
 from pystyle import Colorate, Colors, Center
 from colorsys import hsv_to_rgb
-from pymem.process import *
+from pymem.process import module_from_name
 
 debug = True
 
@@ -88,7 +88,7 @@ def get_configs():
 
 def load_config():
     config_name = loadconfigname_var.get()
-    with io.open(f'configs/{config_name}', 'r') as config_file:
+    with open(f'configs/{config_name}', 'r') as config_file:
         config = yaml.safe_load(config_file)
 
     botidlecheckbypass_var.set(config['botidlecheckbypass']['enabled'])
@@ -127,7 +127,7 @@ def save_config():
         return
 
     try:
-        with io.open(f"configs/{config_name}.yaml", "w") as config_file:
+        with open(f"configs/{config_name}.yaml", "w") as config_file:
             yaml.dump(config, config_file)
         bananadropfarmlog.info(f"Successfully saved the config as {config_name}.yaml")
     except Exception:
