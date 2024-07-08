@@ -91,19 +91,19 @@ def load_config():
     with open(f'configs/{config_name}', 'r') as config_file:
         config = yaml.safe_load(config_file)
 
+    botidlecheckbypassmethod_var.set(config['botidlecheckbypass']['method'])
+    botidlecheckbypassdelay_var.set(config['botidlecheckbypass']['delay'])
+
     botidlecheckbypass_var.set(config['botidlecheckbypass']['enabled'])
     if botidlecheckbypass_var.get():
         botidlecheckbypass1()
 
-    botidlecheckbypassmethod_var.set(config['botidlecheckbypass']['method'])
-    botidlecheckbypassdelay_var.set(config['botidlecheckbypass']['delay'])
+    spoofcpsmethod_var.set(config['spoofcps']['method'])
+    spoofcpsdelay_var.set(config['spoofcps']['delay'])
 
     spoofcps_var.set(config['spoofcps']['enabled'])
     if spoofcps_var.get():
         spoofcps1()
-
-    spoofcpsmethod_var.set(config['spoofcps']['method'])
-    spoofcpsdelay_var.set(config['spoofcps']['delay'])
 
 def save_config():
     config = {
