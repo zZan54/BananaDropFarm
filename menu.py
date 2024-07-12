@@ -153,8 +153,8 @@ except Exception:
     bananadropfarmlog.warning("An error occurred while trying to set the app icon. Using the default icon.")
     pass
 
-score_addr = 0x00E66380
-score_offsets = [0x2D0, 0x18, 0x70, 0x140, 0x78, 0x40, 0x420]
+score_addr = 0x00E6CA60
+score_offsets = [0x40, 0x5E0, 0x20, 0xA88, 0x48, 0x158, 0x420]
 
 def changescore():
     new_score = int(scorevalue.get())
