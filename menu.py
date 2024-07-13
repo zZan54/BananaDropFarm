@@ -166,6 +166,15 @@ def changescore():
             bananadropfarmlog.error(f"An error occurred while trying to set the score to {new_score}.")
             continue
 
+def resetscore1():
+    for game, gameModule in game_instances:
+        try:
+            game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets), 0)
+            bananadropfarmlog.info("Successfully reset the score.")
+        except Exception:
+            bananadropfarmlog.error("An error occurred while trying to reset the score.")
+            continue
+
 def botidlecheckbypass1():
     if botidlecheckbypassdelay_var.get() != None:
         botidlecheckbypassdelay = float(botidlecheckbypassdelay_var.get())
@@ -289,6 +298,9 @@ scorevalue.pack(side="left", padx=5)
 
 setscore = customtkinter.CTkButton(master=score, text="Set Score", command=changescore)
 setscore.pack(side="left", padx=5)
+
+resetscore = customtkinter.CTkButton(master=score, text="Reset Score", command=resetscore1)
+resetscore.pack(side="left", padx=5)
 
 
 botidlecheckbypassall = customtkinter.CTkFrame(master=options.tab("Cheat"))
