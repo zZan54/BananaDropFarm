@@ -166,7 +166,7 @@ def changescore():
             bananadropfarmlog.error(f"An error occurred while trying to set the score to {new_score}.")
             continue
 
-def resetscore():
+def resetscore1():
     for game, gameModule in game_instances:
         try:
             game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets), 0)
@@ -299,6 +299,9 @@ scorevalue.pack(side="left", padx=5)
 setscore = customtkinter.CTkButton(master=score, text="Set Score", command=changescore)
 setscore.pack(side="left", padx=5)
 
+resetscore = customtkinter.CTkButton(master=score, text="Reset Score", command=resetscore1)
+resetscore.pack(side="left", padx=5)
+
 
 botidlecheckbypassall = customtkinter.CTkFrame(master=options.tab("Cheat"))
 botidlecheckbypassall.pack(side="top", padx=20, pady=8)
@@ -334,10 +337,6 @@ spoofcpsdelay_var = customtkinter.StringVar(value='0.5')
 spoofcpsdelay = customtkinter.CTkComboBox(master=spoofcpsall, values=['0.5', '1', '2', '5', '10', '15', '30', '45', '60', '120', '180', '300'], variable=spoofcpsdelay_var, width=60)
 spoofcpsdelay.pack(side="left", padx=5)
 spoofcpsdelay_var.set('0.5')
-
-
-resetscore = customtkinter.CTkButton(master=options.tab("Cheat"), text="Reset Score", command=resetscore)
-resetscore.pack(side="top", pady=8)
 
 
 saveconfig = customtkinter.CTkFrame(master=options.tab("Config"))
