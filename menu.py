@@ -12,12 +12,15 @@ import os
 from pystyle import Colorate, Colors, Center
 from colorsys import hsv_to_rgb
 from pymem.process import module_from_name
+import datetime
 
 debug = True
+savelogs = True
 
 class DebugLog:
     def __init__(self, debug=debug):
         self.debug = debug
+        self.log_file = "logs/logs.txt"
 
     def _log(self, message):
         if self.debug:
@@ -25,20 +28,59 @@ class DebugLog:
         else:
             pass
     
+    def _savetofile(self, message, type):
+        time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        if not os.path.exists("logs"):
+            os.makedirs("logs")
+
+        if type == "info":
+            try:
+                with open(self.log_file, "a") as file:
+                    file.write(f"[{time}][+] {message}\n")
+            except Exception:
+                pass
+
+        elif type == "error":
+            try:
+                with open(self.log_file, "a") as file:
+                    file.write(f"[{time}][-] {message}\n")
+            except Exception:
+                pass
+
+        elif type == "warning":
+            try:
+                with open(self.log_file, "a") as file:
+                    file.write(f"[{time}][!] {message}\n")
+            except Exception:
+                pass
+    
     def info(self, message):
         self._log(f"{Colors.green}[+] {Colors.reset}{message}")
+        if savelogs == True:
+            self._savetofile(message, "info")
+        else:
+            pass
     
     def error(self, message):
         self._log(f"{Colors.red}[-] {Colors.reset}{message}")
+        if savelogs == True:
+            self._savetofile(message, "error")
+        else:
+            pass
     
     def warning(self, message):
         self._log(f"{Colors.cyan}[!] {Colors.reset}{message}")
+        if savelogs == True:
+            self._savetofile(message, "warning")
+        else:
+            pass
 
 bananadropfarmlog = DebugLog()
 
-ctypes.windll.kernel32.SetConsoleTitleW("Banana Drop Farm v1.3 | github.com/zZan54")
+ctypes.windll.kernel32.SetConsoleTitleW("Banana Drop Farm v1.5 | github.com/zZan54")
 
-bananadropfarm = Center.XCenter("\nBanana Drop Farm v1.3\n")
+bananadropfarm = Center.XCenter("\nBanana Drop Farm v1.5\n")
 print(Colorate.Horizontal(Colors.yellow_to_red, bananadropfarm, 1))
 
 customtkinter.set_appearance_mode("System")
@@ -105,6 +147,10 @@ def load_config():
     if spoofcps_var.get():
         spoofcps1()
 
+    idletimerreset_var.set(config['idletimerreset']['enabled'])
+    if idletimerreset_var.get():
+        idletimerreset1()
+
 def save_config():
     config = {
         "botidlecheckbypass": {
@@ -116,13 +162,16 @@ def save_config():
             "enabled": spoofcps_var.get(),
             "method": spoofcpsmethod_var.get(),
             "delay": spoofcpsdelay_var.get()
+        },
+        "idletimerreset": {
+            "enabled": idletimerreset_var.get()
         }
     }
 
     config_name = saveconfigname.get()
     config_name = config_name.replace('.yaml', '')
 
-    if config_name == "":
+    if config_name == "" or config_name == None:
         bananadropfarmlog.error("Please enter a config name.")
         return
 
@@ -153,11 +202,17 @@ except Exception:
     bananadropfarmlog.warning("An error occurred while trying to set the app icon. Using the default icon.")
     pass
 
-score_addr = 0x00E6CA60
+score_addr = 0xE6CA60
 score_offsets = [0x40, 0x5E0, 0x20, 0xA88, 0x48, 0x158, 0x420]
+cps_offset = 0x10
+idletimer_offset = 0xC
 
 def changescore():
-    new_score = int(scorevalue.get())
+    try:
+        new_score = int(scorevalue.get())
+    except Exception:
+        bananadropfarmlog.error("Please enter a valid score value.")
+        return
     for game, gameModule in game_instances:
         try:
             game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets), new_score)
@@ -220,9 +275,9 @@ def botidlecheckbypass1():
                 time.sleep(botidlecheckbypassdelay)
 
     if botidlecheckbypass_var.get():
-        bananadropfarmlog.info(f"Bot idle check bypass has been activated | Method: {botidlecheckbypassmethod_var.get()} | Delay: {botidlecheckbypassdelay} seconds")
+        bananadropfarmlog.info(f"Bot idle check bypass has been activated. | Method: {botidlecheckbypassmethod_var.get()} | Delay: {botidlecheckbypassdelay} seconds")
     else:
-        bananadropfarmlog.info("Bot idle check bypass has been deactivated")
+        bananadropfarmlog.info("Bot idle check bypass has been deactivated.")
 
     thread = threading.Thread(target=update_score)
     thread.daemon = True
@@ -240,7 +295,7 @@ def spoofcps1():
                 for game, gameModule in game_instances:
                     try:
                         new_cps = random.randint(1, 1000000)
-                        game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets) + 0x10, new_cps)
+                        game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets) + cps_offset, new_cps)
                     except Exception:
                         bananadropfarmlog.error("An error occurred while trying to spoof cps.")
                         continue
@@ -252,7 +307,7 @@ def spoofcps1():
                 for game, gameModule in game_instances:
                     try:
                         new_cps = random.randint(1, 20)
-                        game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets) + 0x10, new_cps)
+                        game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets) + cps_offset, new_cps)
                     except Exception:
                         bananadropfarmlog.error("An error occurred while trying to spoof cps.")
                         continue
@@ -263,18 +318,40 @@ def spoofcps1():
             while spoofcps_var.get():
                 for game, gameModule in game_instances:
                     try:
-                        game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets) + 0x10, 15)
+                        game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets) + cps_offset, 15)
                     except Exception:
                         bananadropfarmlog.error("An error occurred while trying to spoof cps.")
                         continue
                 time.sleep(spoofcpsdelay)
 
     if spoofcps_var.get():
-        bananadropfarmlog.info(f"Cps spoof has been activated | Method: {spoofcpsmethod_var.get()} | Delay: {spoofcpsdelay} seconds")
+        bananadropfarmlog.info(f"Cps spoof has been activated. | Method: {spoofcpsmethod_var.get()} | Delay: {spoofcpsdelay} seconds")
     else:
-        bananadropfarmlog.info("Cps spoof has been deactivated")
+        bananadropfarmlog.info("Cps spoof has been deactivated.")
 
     thread = threading.Thread(target=update_cps)
+    thread.daemon = True
+    thread.start()
+
+def idletimerreset1():
+    idletimerresetdelay = 5.0
+
+    def update_timer():
+        while idletimerreset_var.get():
+            for game, gameModule in game_instances:
+                try:
+                    game.write_float(GetPtrAddr(game, gameModule + score_addr, score_offsets) + idletimer_offset, 0.0)
+                except Exception:
+                    bananadropfarmlog.error("An error occurred while trying to reset idle timer.")
+                    continue
+            time.sleep(idletimerresetdelay)
+
+    if idletimerreset_var.get():
+        bananadropfarmlog.info(f"Idle timer reset has been activated.")
+    else:
+        bananadropfarmlog.info("Idle timer reset has been deactivated.")
+
+    thread = threading.Thread(target=update_timer)
     thread.daemon = True
     thread.start()
 
@@ -339,6 +416,14 @@ spoofcpsdelay.pack(side="left", padx=5)
 spoofcpsdelay_var.set('0.5')
 
 
+idletimerresetall = customtkinter.CTkFrame(master=options.tab("Cheat"))
+idletimerresetall.pack(side="top", padx=20, pady=8)
+
+idletimerreset_var = customtkinter.BooleanVar(value=False)
+idletimerreset = customtkinter.CTkCheckBox(master=idletimerresetall, text="Idle Timer Reset", command=idletimerreset1, variable=idletimerreset_var)
+idletimerreset.pack(side="left", padx=5)
+
+
 saveconfig = customtkinter.CTkFrame(master=options.tab("Config"))
 saveconfig.pack(side="top", padx=20, pady=8)
 
@@ -363,6 +448,8 @@ loadconfigfromfile.pack(side="left", padx=5)
 
 info = """Score Changer - changes score
 
+Reset Score - resets score
+
 Bot Idle Check Bypass - bypasses the bot idle check depending on what 
 method you chose
 
@@ -378,6 +465,8 @@ Spoof methods:
  - Random - sets a random cps value
  - Random normal - sets a random cps value from 1 to 20
  - Static - sets a static cps value of 15
+
+Idle Timer Reset - resets the idle timer to 0 every 5 seconds (it is not visible in the game)
 
 Notes: 
  - The chosen method is activated every few seconds, 
