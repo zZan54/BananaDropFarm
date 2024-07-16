@@ -2,6 +2,8 @@ botidlecheckbypass:
   delay: '2'
   enabled: true
   method: Random increment
+idletimerreset:
+  enabled: true
 spoofcps:
   delay: '0.5'
   enabled: true
