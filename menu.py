@@ -446,6 +446,18 @@ loadconfigfromfile = customtkinter.CTkButton(master=loadconfig, text="Load confi
 loadconfigfromfile.pack(side="left", padx=5)
 
 
+livescore = customtkinter.CTkLabel(master=options.tab("Cheat"), text="Live Score: ", text_color="white")
+livescore.pack(side="top", padx=20, pady=8)
+
+livescore_running = True
+
+def livescoreshow():
+    while livescore_running:
+        current_score = game.read_int(GetPtrAddr(game, gameModule + score_addr, score_offsets))
+        livescore.configure(text=f"Live Score: {current_score}")
+        time.sleep(2)
+
+
 info = """Score Changer - changes score
 
 Reset Score - resets score
@@ -467,6 +479,8 @@ Spoof methods:
  - Static - sets a static cps value of 15
 
 Idle Timer Reset - resets the idle timer to 0 every 5 seconds (it is not visible in the game)
+
+Live Score - displays the current game score, as the game does not update the score in real time
 
 Notes: 
  - The chosen method is activated every few seconds, 
@@ -503,8 +517,9 @@ def githublinkanimation():
         time.sleep(0.01)
 
 def on_close():
-    global animation_running
+    global animation_running, livescore_running
     animation_running = False
+    livescore_running = False
     app.destroy()
 
 app.protocol("WM_DELETE_WINDOW", on_close)
@@ -512,5 +527,9 @@ app.protocol("WM_DELETE_WINDOW", on_close)
 githublinkanimationthread = threading.Thread(target=githublinkanimation)
 githublinkanimationthread.daemon = True
 githublinkanimationthread.start()
+
+livescorethread = threading.Thread(target=livescoreshow)
+livescorethread.daemon = True
+livescorethread.start()
 
 app.mainloop()
