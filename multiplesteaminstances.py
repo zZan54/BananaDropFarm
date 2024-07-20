@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 
 def search_steam():
-    default_path = r"D:\Program Files (x86)\Steam\steam.exe"
+    default_path = r"C:\Program Files (x86)\Steam\steam.exe"
     if os.path.isfile(default_path):
         print(f"steam.exe found in the default directory: {default_path}")
         return default_path
