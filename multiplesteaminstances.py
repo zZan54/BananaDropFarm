@@ -2,6 +2,13 @@ import os
 import tkinter as tk
 from tkinter import filedialog, messagebox
 
+def search_steam():
+    default_path = r"D:\Program Files (x86)\Steam\steam.exe"
+    if os.path.isfile(default_path):
+        print(f"steam.exe found in the default directory: {default_path}")
+        return default_path
+    return None
+
 def select_steam():
     root = tk.Tk()
     root.withdraw()
@@ -41,15 +48,18 @@ def steam_instances_script(steampath, instances):
     print("Run the script to start multiple Steam instances.")
 
 def main():
-    print("Note: Make sure your logged out of Steam before continuing.")
+    print("Note: Make sure you're logged out of Steam before continuing.")
 
     try:
         continue_input = input("Press Enter to continue or Ctrl+C to exit.")
     except KeyboardInterrupt:
         exit()
     
-    print("Please select the steam.exe file.")
-    steampath = select_steam()
+    steampath = search_steam()
+    if not steampath:
+        print("steam.exe not found in the default directory. Please select the steam.exe file.")
+        steampath = select_steam()
+    
     instances = steam_instances_number()
     steam_instances_script(steampath, instances)
 
