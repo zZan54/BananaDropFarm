@@ -454,7 +454,7 @@ livescore_running = True
 def livescoreshow():
     while livescore_running:
         current_score = game.read_int(GetPtrAddr(game, gameModule + score_addr, score_offsets))
-        livescore.configure(text=f"Live Score: {current_score}")
+        livescore.configure(text=f"Live Score: {current_score - 1}")
         time.sleep(2)
 
 
