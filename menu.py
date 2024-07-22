@@ -7,6 +7,7 @@ import random
 import threading
 import customtkinter
 import webbrowser
+import sys
 import os
 
 from pystyle import Colorate, Colors, Center
