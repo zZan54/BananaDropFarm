@@ -78,10 +78,19 @@ class DebugLog:
 
 bananadropfarmlog = DebugLog()
 
-ctypes.windll.kernel32.SetConsoleTitleW("Banana Drop Farm v1.5 | github.com/zZan54")
+if getattr(sys, 'frozen', False):
+    try:
+        ctypes.windll.kernel32.SetConsoleTitleW("Banana Drop Farm v1.5 | github.com/zZan54")
 
-bananadropfarm = Center.XCenter("\nBanana Drop Farm v1.5\n")
-print(Colorate.Horizontal(Colors.yellow_to_red, bananadropfarm, 1))
+        bananadropfarm = Center.XCenter("\nBanana Drop Farm v1.5\n")
+        print(Colorate.Horizontal(Colors.yellow_to_red, bananadropfarm, 1))
+    except Exception:
+        pass
+else:
+    ctypes.windll.kernel32.SetConsoleTitleW("Banana Drop Farm v1.5 | github.com/zZan54")
+
+    bananadropfarm = Center.XCenter("\nBanana Drop Farm v1.5\n")
+    print(Colorate.Horizontal(Colors.yellow_to_red, bananadropfarm, 1))
 
 customtkinter.set_appearance_mode("System")
 customtkinter.set_default_color_theme("blue")
