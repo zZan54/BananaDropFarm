@@ -42,17 +42,17 @@ You can also install the dependencies listed in `requirements.txt`.
 
 - **Config Saving and Loading**: Save and load configurations to and from YAML files.
 
-## New Script: `multiplesteaminstances.py`
-This new script allows running multiple instances of Steam. It generates a batch script to start multiple Steam instances with unique IPC names.
+## Script: `multiplesteaminstances.py`
+This script allows running multiple instances of Steam. It generates a batch script to start multiple Steam instances with unique IPC names.
 - **Note**: Ensure you are logged out of Steam and fully exit Steam before running the generated `multiple_steam_instances.bat` script to avoid conflicts.
 - **Usage**:
-    1. Run `multiplesteaminstances.py`.
-    2. Select the `steam.exe` file.
-    3. Enter the number of Steam instances to run (1-10).
-    4. A batch script will be created to start the specified number of Steam instances.
+    - Run `multiplesteaminstances.py`.
+    - Select the `steam.exe` file.
+    - Enter the number of Steam instances to run (1-10).
+    - A batch script will be created to start the specified number of Steam instances.
 
 ## Contributing
 The project is open to contributors. Feel free to open an issue or submit a pull request.
 
 ## License
-This project is licensed under the GNU General Public License v3.0.
+This project is licensed under the [GNU General Public License v3.0](https://opensource.org/license/GPL-3.0).

@@ -1,4 +1,5 @@
 import os
+import sys
 import tkinter as tk
 from tkinter import filedialog, messagebox
 
@@ -18,10 +19,10 @@ def select_steam():
     )
     if not file_path:
         messagebox.showerror("Error", "No file selected. Exiting.")
-        exit()
+        sys.exit()
     if not file_path.endswith("steam.exe"):
         messagebox.showerror("Error", "Selected file is not steam.exe. Exiting.")
-        exit()
+        sys.exit()
     return file_path
 
 def steam_instances_number():
@@ -53,7 +54,7 @@ def main():
     try:
         continue_input = input("Press Enter to continue or Ctrl+C to exit.")
     except KeyboardInterrupt:
-        exit()
+        sys.exit()
     
     steampath = search_steam()
     if not steampath:

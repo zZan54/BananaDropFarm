@@ -7,13 +7,15 @@ import random
 import threading
 import customtkinter
 import webbrowser
+import datetime
+import asyncio
 import sys
 import os
 
 from pystyle import Colorate, Colors, Center
 from colorsys import hsv_to_rgb
 from pymem.process import module_from_name
-import datetime
+from typing import Callable, Dict
 
 debug = True
 savelogs = True
@@ -77,7 +79,57 @@ class DebugLog:
         else:
             pass
 
+class ThreadManager:
+    def __init__(self):
+        self.loop = asyncio.new_event_loop()
+        self.tasks: Dict[str, asyncio.Task] = {}
+        self._running = False
+
+    async def _run_task(self, name: str, func: Callable, *args, **kwargs):
+        while self._running:
+            try:
+                await func(*args, **kwargs)
+            except Exception as e:
+                bananadropfarmlog.error(f"Error in task {name}: {e}")
+                await asyncio.sleep(1)
+
+    def start_task(self, name: str, func: Callable, *args, **kwargs):
+        if name in self.tasks:
+            raise ValueError(f"Task {name} already exists")
+        
+        async def wrapped_func():
+            while True:
+                try:
+                    if asyncio.iscoroutinefunction(func):
+                        await func(*args, **kwargs)
+                    else:
+                        await self.loop.run_in_executor(None, func, *args, **kwargs)
+                except Exception as e:
+                    bananadropfarmlog.error(f"Error in task {name}: {e}")
+                await asyncio.sleep(0.1)
+
+        task = self.loop.create_task(wrapped_func())
+        self.tasks[name] = task
+
+    def stop_task(self, name: str):
+        if name in self.tasks:
+            self.tasks[name].cancel()
+            del self.tasks[name]
+
+    def start(self):
+        self._running = True
+        asyncio.set_event_loop(self.loop)
+        self.loop.run_forever()
+
+    def stop(self):
+        self._running = False
+        for task in self.tasks.values():
+            task.cancel()
+        self.loop.stop()
+        self.tasks.clear()
+
 bananadropfarmlog = DebugLog()
+thread_manager = ThreadManager()
 
 if getattr(sys, 'frozen', False):
     try:
@@ -105,13 +157,13 @@ def get_banana_processes():
         return processes
     except Exception:
         bananadropfarmlog.error("An error occurred while trying to get the Banana processes.")
-        exit()
+        sys.exit()
 
 try:
     banana_processes = get_banana_processes()
     if len(banana_processes) == 0:
         bananadropfarmlog.error("Banana process not found. Exiting...")
-        exit()
+        sys.exit()
     else:
         game_instances = []
         for banana_process in banana_processes:
@@ -125,7 +177,7 @@ try:
                 continue
 except Exception:
     bananadropfarmlog.error(f"An error occurred while trying to find the game process. Exiting...")
-    exit()
+    sys.exit()
 
 def get_configs():
     configs = []
@@ -241,129 +293,76 @@ def resetscore1():
             continue
 
 def botidlecheckbypass1():
-    if botidlecheckbypassdelay_var.get() != None:
-        botidlecheckbypassdelay = float(botidlecheckbypassdelay_var.get())
-    else:
-        botidlecheckbypassdelay = 2.0
-
-    if botidlecheckbypassmethod_var.get() == "Random increment":
-        def update_score():
-            while botidlecheckbypass_var.get():
-                for game, gameModule in game_instances:
-                    try:
-                        current_score = game.read_int(GetPtrAddr(game, gameModule + score_addr, score_offsets))
-                        new_score = current_score + random.randint(1, 25)
-                        game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets), new_score)
-                    except Exception:
-                        bananadropfarmlog.error("An error occurred while trying to bypass the bot idle check.")
-                        continue
-                time.sleep(botidlecheckbypassdelay)
-
-    elif botidlecheckbypassmethod_var.get() == "Random value":
-        def update_score():
-            while botidlecheckbypass_var.get():
-                for game, gameModule in game_instances:
-                    try:
-                        new_score = random.randint(1, 1000000)
-                        game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets), new_score)
-                    except Exception:
-                        bananadropfarmlog.error("An error occurred while trying to bypass the bot idle check.")
-                        continue
-                time.sleep(botidlecheckbypassdelay)
-
-    elif botidlecheckbypassmethod_var.get() == "Increment":
-        def update_score():
-            while botidlecheckbypass_var.get():
-                for game, gameModule in game_instances:
-                    try:
-                        current_score = game.read_int(GetPtrAddr(game, gameModule + score_addr, score_offsets))
-                        new_score = current_score + 1
-                        game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets), new_score)
-                    except Exception:
-                        bananadropfarmlog.error("An error occurred while trying to bypass the bot idle check.")
-                        continue
-                time.sleep(botidlecheckbypassdelay)
-
     if botidlecheckbypass_var.get():
-        bananadropfarmlog.info(f"Bot idle check bypass has been activated. | Method: {botidlecheckbypassmethod_var.get()} | Delay: {botidlecheckbypassdelay} seconds")
+        botidlecheckbypassdelay = float(botidlecheckbypassdelay_var.get() or 2.0)
+        method = botidlecheckbypassmethod_var.get()
+
+        async def update_score():
+            while True:
+                for game, gameModule in game_instances:
+                    try:
+                        if method == "Random increment":
+                            current_score = game.read_int(GetPtrAddr(game, gameModule + score_addr, score_offsets))
+                            new_score = current_score + random.randint(1, 25)
+                        elif method == "Random value":
+                            new_score = random.randint(1, 1000000)
+                        elif method == "Increment":
+                            current_score = game.read_int(GetPtrAddr(game, gameModule + score_addr, score_offsets))
+                            new_score = current_score + 1
+                        game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets), new_score)
+                    except Exception:
+                        bananadropfarmlog.error("An error occurred while trying to bypass the bot idle check.")
+                await asyncio.sleep(botidlecheckbypassdelay)
+
+        thread_manager.start_task("botidlecheck", update_score)
+        bananadropfarmlog.info(f"Bot idle check bypass has been activated. | Method: {method} | Delay: {botidlecheckbypassdelay} seconds")
     else:
+        thread_manager.stop_task("botidlecheck")
         bananadropfarmlog.info("Bot idle check bypass has been deactivated.")
 
-    thread = threading.Thread(target=update_score)
-    thread.daemon = True
-    thread.start()
-
 def spoofcps1():
-    if spoofcpsdelay_var.get() != None:
-        spoofcpsdelay = float(spoofcpsdelay_var.get())
-    else:
-       spoofcpsdelay = 0.5
-
-    if spoofcpsmethod_var.get() == "Random":
-        def update_cps():
-            while spoofcps_var.get():
-                for game, gameModule in game_instances:
-                    try:
-                        new_cps = random.randint(1, 1000000)
-                        game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets) + cps_offset, new_cps)
-                    except Exception:
-                        bananadropfarmlog.error("An error occurred while trying to spoof cps.")
-                        continue
-                time.sleep(spoofcpsdelay)
-
-    elif spoofcpsmethod_var.get() == "Random normal":
-        def update_cps():
-            while spoofcps_var.get():
-                for game, gameModule in game_instances:
-                    try:
-                        new_cps = random.randint(1, 20)
-                        game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets) + cps_offset, new_cps)
-                    except Exception:
-                        bananadropfarmlog.error("An error occurred while trying to spoof cps.")
-                        continue
-                time.sleep(spoofcpsdelay)
-
-    elif spoofcpsmethod_var.get() == "Static":
-        def update_cps():
-            while spoofcps_var.get():
-                for game, gameModule in game_instances:
-                    try:
-                        game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets) + cps_offset, 15)
-                    except Exception:
-                        bananadropfarmlog.error("An error occurred while trying to spoof cps.")
-                        continue
-                time.sleep(spoofcpsdelay)
-
     if spoofcps_var.get():
-        bananadropfarmlog.info(f"Cps spoof has been activated. | Method: {spoofcpsmethod_var.get()} | Delay: {spoofcpsdelay} seconds")
+        spoofcpsdelay = float(spoofcpsdelay_var.get() or 0.5)
+        method = spoofcpsmethod_var.get()
+
+        async def update_cps():
+            while True:
+                for game, gameModule in game_instances:
+                    try:
+                        if method == "Random":
+                            new_cps = random.randint(1, 1000000)
+                        elif method == "Random normal":
+                            new_cps = random.randint(1, 20)
+                        elif method == "Static":
+                            new_cps = 15
+                        game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets) + cps_offset, new_cps)
+                    except Exception:
+                        bananadropfarmlog.error("An error occurred while trying to spoof cps.")
+                await asyncio.sleep(spoofcpsdelay)
+
+        thread_manager.start_task("spoofcps", update_cps)
+        bananadropfarmlog.info(f"Cps spoof has been activated. | Method: {method} | Delay: {spoofcpsdelay} seconds")
     else:
+        thread_manager.stop_task("spoofcps")
         bananadropfarmlog.info("Cps spoof has been deactivated.")
 
-    thread = threading.Thread(target=update_cps)
-    thread.daemon = True
-    thread.start()
-
 def idletimerreset1():
-    idletimerresetdelay = 5.0
-
-    def update_timer():
-        while idletimerreset_var.get():
-            for game, gameModule in game_instances:
-                try:
-                    game.write_float(GetPtrAddr(game, gameModule + score_addr, score_offsets) + idletimer_offset, 0.0)
-                except Exception:
-                    bananadropfarmlog.error("An error occurred while trying to reset idle timer.")
-                    continue
-            time.sleep(idletimerresetdelay)
-
     if idletimerreset_var.get():
-        bananadropfarmlog.info(f"Idle timer reset has been activated.")
+        async def update_timer():
+            while True:
+                for game, gameModule in game_instances:
+                    try:
+                        game.write_float(GetPtrAddr(game, gameModule + score_addr, score_offsets) + idletimer_offset, 0.0)
+                    except Exception:
+                        bananadropfarmlog.error("An error occurred while trying to reset idle timer.")
+                await asyncio.sleep(5.0)
+
+        thread_manager.start_task("idletimerreset", update_timer)
+        bananadropfarmlog.info("Idle timer reset has been activated.")
     else:
+        thread_manager.stop_task("idletimerreset")
         bananadropfarmlog.info("Idle timer reset has been deactivated.")
 
-    thread = threading.Thread(target=update_timer)
-    thread.daemon = True
-    thread.start()
 
 options = customtkinter.CTkTabview(master=app, width=520, height=300)
 options.pack(anchor=customtkinter.CENTER)
@@ -459,13 +458,11 @@ loadconfigfromfile.pack(side="left", padx=5)
 livescore = customtkinter.CTkLabel(master=options.tab("Cheat"), text="Live Score: ", text_color="white")
 livescore.pack(side="top", padx=20, pady=8)
 
-livescore_running = True
-
-def livescoreshow():
-    while livescore_running:
+async def livescoreshow():
+    while True:
         current_score = game.read_int(GetPtrAddr(game, gameModule + score_addr, score_offsets))
         livescore.configure(text=f"Live Score: {current_score - 1}")
-        time.sleep(2)
+        await asyncio.sleep(1.25)
 
 
 info = """Score Changer - changes score
@@ -498,7 +495,7 @@ Notes:
  - If you want to run more than one banana instance, 
    please use multiplesteaminstances.py to run multiple
    instances of the game.
- - Default delay is 2 seconds.
+ - Live Score updates every 1.25 seconds.
  - You need to click for the score to update.
 """
 infobox = customtkinter.CTkTextbox(master=options.tab("Info"), height=230, width=460)
@@ -510,13 +507,11 @@ githublink = customtkinter.CTkLabel(app, text="github.com/zZan54", fg_color="tra
 githublink.place(x=220, y=310)
 githublink.bind("<Button-1>", lambda e: webbrowser.open("https://github.com/zZan54"))
 
-animation_running = True
-
-def githublinkanimation():
+async def githublinkanimation():
     colors = [f"#{''.join(f'{int(c * 255):02x}' for c in hsv_to_rgb(i / 360, 1, 1))}" for i in range(360)]
     i = 0
     direction = 1
-    while animation_running:
+    while True:
         if i >= 350:
             direction = -1
         elif i <= 50:
@@ -524,22 +519,16 @@ def githublinkanimation():
         i += direction
         githublink.place(x=10 + i, y=310)
         githublink.configure(text_color=colors[i])
-        time.sleep(0.01)
+        await asyncio.sleep(0.01)
 
 def on_close():
-    global animation_running, livescore_running
-    animation_running = False
-    livescore_running = False
+    thread_manager.stop()
     app.destroy()
+    
+thread_manager.start_task("livescore", livescoreshow)
+thread_manager.start_task("githublink", githublinkanimation)
+
+threading.Thread(target=thread_manager.start, daemon=True).start()
 
 app.protocol("WM_DELETE_WINDOW", on_close)
-
-githublinkanimationthread = threading.Thread(target=githublinkanimation)
-githublinkanimationthread.daemon = True
-githublinkanimationthread.start()
-
-livescorethread = threading.Thread(target=livescoreshow)
-livescorethread.daemon = True
-livescorethread.start()
-
 app.mainloop()
