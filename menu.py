@@ -133,16 +133,16 @@ thread_manager = ThreadManager()
 
 if getattr(sys, 'frozen', False):
     try:
-        ctypes.windll.kernel32.SetConsoleTitleW("Banana Drop Farm v1.5 | github.com/zZan54")
+        ctypes.windll.kernel32.SetConsoleTitleW("Banana Drop Farm v1.6 | github.com/zZan54")
 
-        bananadropfarm = Center.XCenter("\nBanana Drop Farm v1.5\n")
+        bananadropfarm = Center.XCenter("\nBanana Drop Farm v1.6\n")
         print(Colorate.Horizontal(Colors.yellow_to_red, bananadropfarm, 1))
     except Exception:
         pass
 else:
-    ctypes.windll.kernel32.SetConsoleTitleW("Banana Drop Farm v1.5 | github.com/zZan54")
+    ctypes.windll.kernel32.SetConsoleTitleW("Banana Drop Farm v1.6 | github.com/zZan54")
 
-    bananadropfarm = Center.XCenter("\nBanana Drop Farm v1.5\n")
+    bananadropfarm = Center.XCenter("\nBanana Drop Farm v1.6\n")
     print(Colorate.Horizontal(Colors.yellow_to_red, bananadropfarm, 1))
 
 customtkinter.set_appearance_mode("System")
