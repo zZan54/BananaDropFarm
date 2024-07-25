@@ -1,4 +1,3 @@
-import time
 import pymem
 import yaml
 import psutil
