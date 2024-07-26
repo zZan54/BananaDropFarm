@@ -263,8 +263,8 @@ except Exception:
     bananadropfarmlog.warning("An error occurred while trying to set the app icon. Using the default icon.")
     pass
 
-score_addr = 0x1BFDFC0
-score_offsets = [0x100, 0x1C0, 0x80, 0xE8, 0x78, 0x60, 0xA0]
+score_addr = 0x1C03E00
+score_offsets = [0x20, 0x1C0, 0x80, 0xE8, 0x78, 0x60, 0xA0]
 cps_offset = 0x10
 idletimer_offset = 0xC
 
