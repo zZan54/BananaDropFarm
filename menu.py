@@ -189,28 +189,52 @@ def get_configs():
         pass
     return configs
 
+currently_loaded_config = None
 def load_config():
+    global currently_loaded_config
+
     config_name = loadconfigname_var.get()
-    with open(f'configs/{config_name}', 'r') as config_file:
-        config = yaml.safe_load(config_file)
+    if config_name != currently_loaded_config:
+        with open(f'configs/{config_name}', 'r') as config_file:
+            config = yaml.safe_load(config_file)
+            currently_loaded_config = config_name
 
-    botidlecheckbypassmethod_var.set(config['botidlecheckbypass']['method'])
-    botidlecheckbypassdelay_var.set(config['botidlecheckbypass']['delay'])
+        try:
+            botidlecheckbypassmethod_var.set(config['botidlecheckbypass']['method'])
+            botidlecheckbypassdelay_var.set(config['botidlecheckbypass']['delay'])
+        except Exception:
+            pass
 
-    botidlecheckbypass_var.set(config['botidlecheckbypass']['enabled'])
-    if botidlecheckbypass_var.get():
-        botidlecheckbypass1()
+        try:
+            botidlecheckbypass_var.set(config['botidlecheckbypass']['enabled'])
+            if botidlecheckbypass_var.get():
+                botidlecheckbypass1()
+        except Exception:
+            pass
 
-    spoofcpsmethod_var.set(config['spoofcps']['method'])
-    spoofcpsdelay_var.set(config['spoofcps']['delay'])
+        try:
+            spoofcpsmethod_var.set(config['spoofcps']['method'])
+            spoofcpsdelay_var.set(config['spoofcps']['delay'])
+        except Exception:
+            pass
 
-    spoofcps_var.set(config['spoofcps']['enabled'])
-    if spoofcps_var.get():
-        spoofcps1()
+        try:
+            spoofcps_var.set(config['spoofcps']['enabled'])
+            if spoofcps_var.get():
+                spoofcps1()
+        except Exception:
+            pass
 
-    idletimerreset_var.set(config['idletimerreset']['enabled'])
-    if idletimerreset_var.get():
-        idletimerreset1()
+        try:
+            idletimerreset_var.set(config['idletimerreset']['enabled'])
+            if idletimerreset_var.get():
+                idletimerreset1()
+        except Exception:
+            pass
+
+    else:
+        bananadropfarmlog.error(f"Config {config_name} is already loaded.")
+        pass
 
 def save_config():
     config = {
