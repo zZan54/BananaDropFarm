@@ -405,10 +405,10 @@ scorechanger.pack(side="left", padx=5)
 scorevalue = customtkinter.CTkEntry(master=score, placeholder_text="Value")
 scorevalue.pack(side="left", padx=5)
 
-setscore = customtkinter.CTkButton(master=score, text="Set Score", command=changescore)
+setscore = customtkinter.CTkButton(master=score, text="Set Score", command=changescore, width=10)
 setscore.pack(side="left", padx=5)
 
-resetscore = customtkinter.CTkButton(master=score, text="Reset Score", command=resetscore1)
+resetscore = customtkinter.CTkButton(master=score, text="Reset Score", command=resetscore1, width=10)
 resetscore.pack(side="left", padx=5)
 
 
