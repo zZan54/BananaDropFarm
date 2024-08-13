@@ -168,7 +168,7 @@ try:
         for banana_process in banana_processes:
             try:
                 game = pymem.Pymem(banana_process)
-                gameModule = module_from_name(game.process_handle, "UnityPlayer.dll").lpBaseOfDll
+                gameModule = module_from_name(game.process_handle, "GameAssembly.dll").lpBaseOfDll
                 game_instances.append((game, gameModule))
                 bananadropfarmlog.info(f"Successfully found the game process with PID {banana_process}.")
             except Exception:
@@ -287,10 +287,10 @@ except Exception:
     bananadropfarmlog.warning("An error occurred while trying to set the app icon. Using the default icon.")
     pass
 
-score_addr = 0x1C03E00
-score_offsets = [0x20, 0x1C0, 0x80, 0xE8, 0x78, 0x60, 0xA0]
-cps_offset = 0x10
-idletimer_offset = 0xC
+score_addr = 0x12284D8
+score_offsets = [0x20, 0x10, 0x60, 0x28, 0x40, 0x50, 0x48]
+cps_offset = 0x38
+idletimer_offset = 0x34
 
 def changescore():
     try:
