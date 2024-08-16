@@ -484,7 +484,7 @@ livescore.pack(side="top", padx=20, pady=8)
 async def livescoreshow():
     while True:
         current_score = game.read_int(GetPtrAddr(game, gameModule + score_addr, score_offsets))
-        livescore.configure(text=f"Live Score: {current_score - 1}")
+        livescore.configure(text=f"Live Score: {current_score}")
         await asyncio.sleep(1.25)
 
 
