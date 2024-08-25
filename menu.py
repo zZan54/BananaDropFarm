@@ -132,16 +132,16 @@ thread_manager = ThreadManager()
 
 if getattr(sys, 'frozen', False):
     try:
-        ctypes.windll.kernel32.SetConsoleTitleW("Banana Drop Farm v1.6 | github.com/zZan54")
+        ctypes.windll.kernel32.SetConsoleTitleW("Banana Drop Farm v1.7 | github.com/zZan54")
 
-        bananadropfarm = Center.XCenter("\nBanana Drop Farm v1.6\n")
+        bananadropfarm = Center.XCenter("\nBanana Drop Farm v1.7\n")
         print(Colorate.Horizontal(Colors.yellow_to_red, bananadropfarm, 1))
     except Exception:
         pass
 else:
-    ctypes.windll.kernel32.SetConsoleTitleW("Banana Drop Farm v1.6 | github.com/zZan54")
+    ctypes.windll.kernel32.SetConsoleTitleW("Banana Drop Farm v1.7 | github.com/zZan54")
 
-    bananadropfarm = Center.XCenter("\nBanana Drop Farm v1.6\n")
+    bananadropfarm = Center.XCenter("\nBanana Drop Farm v1.7\n")
     print(Colorate.Horizontal(Colors.yellow_to_red, bananadropfarm, 1))
 
 customtkinter.set_appearance_mode("System")
@@ -158,25 +158,30 @@ def get_banana_processes():
         bananadropfarmlog.error("An error occurred while trying to get the Banana processes.")
         sys.exit()
 
-try:
-    banana_processes = get_banana_processes()
-    if len(banana_processes) == 0:
-        bananadropfarmlog.error("Banana process not found. Exiting...")
+def load_menu():
+    global game, gameModule, game_instances
+
+    try:
+        banana_processes = get_banana_processes()
+        if len(banana_processes) == 0:
+            bananadropfarmlog.error("Banana process not found. Exiting...")
+            sys.exit()
+        else:
+            game_instances = []
+            for banana_process in banana_processes:
+                try:
+                    game = pymem.Pymem(banana_process)
+                    gameModule = module_from_name(game.process_handle, "GameAssembly.dll").lpBaseOfDll
+                    game_instances.append((game, gameModule))
+                    bananadropfarmlog.info(f"Successfully found the game process with PID {banana_process}.")
+                except Exception:
+                    bananadropfarmlog.error(f"An error occurred while trying to find the game process with PID {banana_process}.")
+                    continue
+    except Exception:
+        bananadropfarmlog.error(f"An error occurred while trying to find the game process. Exiting...")
         sys.exit()
-    else:
-        game_instances = []
-        for banana_process in banana_processes:
-            try:
-                game = pymem.Pymem(banana_process)
-                gameModule = module_from_name(game.process_handle, "GameAssembly.dll").lpBaseOfDll
-                game_instances.append((game, gameModule))
-                bananadropfarmlog.info(f"Successfully found the game process with PID {banana_process}.")
-            except Exception:
-                bananadropfarmlog.error(f"An error occurred while trying to find the game process with PID {banana_process}.")
-                continue
-except Exception:
-    bananadropfarmlog.error(f"An error occurred while trying to find the game process. Exiting...")
-    sys.exit()
+
+load_menu()
 
 def get_configs():
     configs = []
@@ -289,8 +294,14 @@ except Exception:
 
 score_addr = 0xFC6EC0
 score_offsets = [0x380, 0x40, 0x370, 0x88, 0xB8, 0x20, 0x108]
+mainasset_addr = 0x1056600
+mainasset_offsets = [0xD60, 0x60, 0x10, 0xF0, 0x4B4]
+droptimer_addr = 0x10670C8
+droptimer_offsets = [0x390, 0xD48, 0x140, 0x70, 0x20]
+droptimerfix_offset = 0x4
 cps_offset = 0x38
 idletimer_offset = 0x34
+crash_offset = 0x18
 
 def changescore():
     try:
@@ -298,6 +309,7 @@ def changescore():
     except Exception:
         bananadropfarmlog.error("Please enter a valid score value.")
         return
+    
     for game, gameModule in game_instances:
         try:
             game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets), new_score)
@@ -386,11 +398,168 @@ def idletimerreset1():
         thread_manager.stop_task("idletimerreset")
         bananadropfarmlog.info("Idle timer reset has been deactivated.")
 
+def changemainasset1():
+    try:
+        new_mainasset = int(mainassetvalue.get())
+        new_mainasset += 1
+
+        mainassetvalue.delete(0, "end")
+        mainassetvalue.insert(0, new_mainasset)
+    except Exception:
+        mainassetvalue.delete(0, "end")
+        mainassetvalue.insert(0, 1)
+        return
+    
+    for game, gameModule in game_instances:
+        try:
+            game.write_int(GetPtrAddr(game, gameModule + mainasset_addr, mainasset_offsets), new_mainasset)
+            bananadropfarmlog.info(f"Successfully set the main asset to {new_mainasset}.")
+        except Exception:
+            bananadropfarmlog.error(f"An error occurred while trying to set the main asset to {new_mainasset}.")
+            continue
+
+def changemainasset2():
+        try:
+            new_mainasset = int(mainassetvalue.get())
+            new_mainasset -= 1
+
+            mainassetvalue.delete(0, "end")
+            mainassetvalue.insert(0, new_mainasset)
+        except Exception:
+            mainassetvalue.delete(0, "end")
+            mainassetvalue.insert(0, 0)
+            return
+        
+        for game, gameModule in game_instances:
+            try:
+                game.write_int(GetPtrAddr(game, gameModule + mainasset_addr, mainasset_offsets), new_mainasset)
+                bananadropfarmlog.info(f"Successfully set the main asset to {new_mainasset}.")
+            except Exception:
+                bananadropfarmlog.error(f"An error occurred while trying to set the main asset to {new_mainasset}.")
+                continue
+
+def changedroptimer():
+    try:
+        hours = float(droptimervaluehours.get())
+        minutes = float(droptimervalueminutes.get())
+        seconds = float(droptimervalueseconds.get())
+    except Exception:
+        bananadropfarmlog.error("Please enter a valid time value.")
+
+        droptimervaluehours.delete(0, "end")
+        droptimervaluehours.insert(0, 0)
+        droptimervalueminutes.delete(0, "end")
+        droptimervalueminutes.insert(0, 0)
+        droptimervalueseconds.delete(0, "end")
+        droptimervalueseconds.insert(0, 0)
+        return
+    
+    new_time = (hours * 3600) + (minutes * 60) + seconds + 1
+    
+    for game, gameModule in game_instances:
+        try:
+            game.write_float(GetPtrAddr(game, gameModule + droptimer_addr, droptimer_offsets), new_time)
+            bananadropfarmlog.info(f"Successfully set the drop timer to {new_time}.")
+        except Exception:
+            bananadropfarmlog.error(f"An error occurred while trying to set the main asset to {new_time}.")
+            continue
+
+def showlivestats1():
+    global livescore, livecps, liveidletimer
+
+    if showlivestats_var.get():
+        livescore = customtkinter.CTkLabel(master=showlivestatsall, text="Live Score: ", text_color="white")
+        livescore.pack(side="left", padx=5)
+
+        livecps = customtkinter.CTkLabel(master=showlivestatsall, text="Live CPS: ", text_color="white")
+        livecps.pack(side="left", padx=5)
+
+        liveidletimer = customtkinter.CTkLabel(master=showlivestatsall, text="Live Idle Timer: ", text_color="white")
+        liveidletimer.pack(side="left", padx=5)
+
+        async def livescoreshow():
+            while True:
+                current_score = game.read_int(GetPtrAddr(game, gameModule + score_addr, score_offsets))
+                livescore.configure(text=f"Live Score: {current_score}")
+                await asyncio.sleep(1.25)
+
+        async def livecpsshow():
+            while True:
+                current_cps = game.read_int(GetPtrAddr(game, gameModule + score_addr, score_offsets) + cps_offset)
+                livecps.configure(text=f"Live CPS: {current_cps}")
+                await asyncio.sleep(1.00)
+
+        async def liveidletimershow():
+            while True:
+                current_idletimer = game.read_float(GetPtrAddr(game, gameModule + score_addr, score_offsets) + idletimer_offset)
+                liveidletimer.configure(text=f"Live Idle Timer: {current_idletimer:.2f}")
+                await asyncio.sleep(1.25)
+
+        thread_manager.start_task("livescore", livescoreshow)
+        thread_manager.start_task("livecps", livecpsshow)
+        thread_manager.start_task("liveidletimer", liveidletimershow)
+    else:
+        thread_manager.stop_task("livescore")
+        thread_manager.stop_task("livecps")
+        thread_manager.stop_task("liveidletimer")
+
+        livescore.destroy()
+        livecps.destroy()
+        liveidletimer.destroy()
+
+def opengame1():
+    try:
+        os.system("start steam://run/2923300")
+        bananadropfarmlog.info("Successfully opened the game.")
+    except Exception:
+        bananadropfarmlog.error("An error occurred while trying to open the game.")
+        pass
+
+    asyncio.run(async_opengame1())
+
+async def async_opengame1():
+    await asyncio.sleep(8)
+    load_menu()
+
+def closegame1():
+    try:
+        os.system("taskkill /f /im Banana.exe")
+        bananadropfarmlog.info("Successfully closed the game.")
+    except Exception:
+        bananadropfarmlog.error("An error occurred while trying to close the game.")
+
+def crashgame1():
+    try:
+        game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets) + crash_offset, -1)
+        bananadropfarmlog.info("Successfully crashed the game.")
+    except Exception:
+        bananadropfarmlog.error("An error occurred while trying to crash the game.")
+
+def restartgame1():
+    closegame1()
+    opengame1()
+
+def fixdroptimer1():
+    try:
+        game.write_int(GetPtrAddr(game, gameModule + droptimer_addr, droptimer_offsets) + droptimerfix_offset, 1)
+        game.write_float(GetPtrAddr(game, gameModule + droptimer_addr, droptimer_offsets), 10800.0)
+        bananadropfarmlog.info("Successfully fixed the drop timer.")
+    except Exception:
+        bananadropfarmlog.error("An error occurred while trying to fix the drop timer.")
+
+def fixmainasset1():
+    try:
+        game.write_int(GetPtrAddr(game, gameModule + mainasset_addr, mainasset_offsets), 158)
+        bananadropfarmlog.info("Successfully fixed the main asset.")
+    except Exception:
+        bananadropfarmlog.error("An error occurred while trying to fix the main asset.")
+
 
 options = customtkinter.CTkTabview(master=app, width=520, height=300)
 options.pack(anchor=customtkinter.CENTER)
 
 options.add("Cheat")
+options.add("Misc")
 options.add("Config")
 options.add("Info")
 options.set("Cheat")
@@ -478,14 +647,73 @@ loadconfigfromfile = customtkinter.CTkButton(master=loadconfig, text="Load confi
 loadconfigfromfile.pack(side="left", padx=5)
 
 
-livescore = customtkinter.CTkLabel(master=options.tab("Cheat"), text="Live Score: ", text_color="white")
-livescore.pack(side="top", padx=20, pady=8)
+mainasset = customtkinter.CTkFrame(master=options.tab("Misc"))
+mainasset.pack(side="top", padx=20, pady=8)
 
-async def livescoreshow():
-    while True:
-        current_score = game.read_int(GetPtrAddr(game, gameModule + score_addr, score_offsets))
-        livescore.configure(text=f"Live Score: {current_score}")
-        await asyncio.sleep(1.25)
+mainassetchanger = customtkinter.CTkLabel(master=mainasset, text="Main Asset Changer:", fg_color="transparent")
+mainassetchanger.pack(side="left", padx=5)
+
+setmainasset1 = customtkinter.CTkButton(master=mainasset, text="-", command=changemainasset2, width=10)
+setmainasset1.pack(side="left", padx=5)
+
+mainassetvalue = customtkinter.CTkEntry(master=mainasset, placeholder_text="Value", width=50)
+mainassetvalue.pack(side="left", padx=5)
+
+setmainasset2 = customtkinter.CTkButton(master=mainasset, text="+", command=changemainasset1, width=10)
+setmainasset2.pack(side="left", padx=5)
+
+
+droptimer = customtkinter.CTkFrame(master=options.tab("Misc"))
+droptimer.pack(side="top", padx=20, pady=8)
+
+droptimerchanger = customtkinter.CTkLabel(master=droptimer, text="Drop Timer Changer:", fg_color="transparent")
+droptimerchanger.pack(side="left", padx=5)
+
+droptimervaluehours = customtkinter.CTkEntry(master=droptimer, placeholder_text="Hours", width=65)
+droptimervaluehours.pack(side="left", padx=5)
+
+droptimervalueminutes = customtkinter.CTkEntry(master=droptimer, placeholder_text="Minutes", width=65)
+droptimervalueminutes.pack(side="left", padx=5)
+
+droptimervalueseconds = customtkinter.CTkEntry(master=droptimer, placeholder_text="Seconds", width=65)
+droptimervalueseconds.pack(side="left", padx=5)
+
+setdroptimer = customtkinter.CTkButton(master=droptimer, text="Set Timer", command=changedroptimer, width=10)
+setdroptimer.pack(side="left", padx=5)
+
+
+showlivestatsall = customtkinter.CTkFrame(master=options.tab("Misc"))
+showlivestatsall.pack(side="top", padx=20, pady=8)
+
+showlivestats_var = customtkinter.BooleanVar(value=False)
+showlivestats = customtkinter.CTkCheckBox(master=showlivestatsall, text="Show Live Stats", command=showlivestats1, variable=showlivestats_var)
+showlivestats.pack(side="left", padx=5)
+
+
+gameoptions = customtkinter.CTkFrame(master=options.tab("Misc"))
+gameoptions.pack(side="top", padx=20, pady=8)
+
+opengame = customtkinter.CTkButton(master=gameoptions, text="Open Game", command=opengame1, width=10)
+opengame.pack(side="left", padx=5)
+
+closegame = customtkinter.CTkButton(master=gameoptions, text="Close Game", command=closegame1, width=10)
+closegame.pack(side="left", padx=5)
+
+crashgame = customtkinter.CTkButton(master=gameoptions, text="Crash Game", command=crashgame1, width=10)
+crashgame.pack(side="left", padx=5)
+
+restartgame = customtkinter.CTkButton(master=gameoptions, text="Restart Game", command=restartgame1, width=10)
+restartgame.pack(side="left", padx=5)
+
+
+fixoptions = customtkinter.CTkFrame(master=options.tab("Misc"))
+fixoptions.pack(side="top", padx=20, pady=8)
+
+fixdroptimer = customtkinter.CTkButton(master=fixoptions, text="Fix Drop Timer", command=fixdroptimer1, width=10)
+fixdroptimer.pack(side="left", padx=5)
+
+fixmainasset = customtkinter.CTkButton(master=fixoptions, text="Fix Main Asset", command=fixmainasset1, width=10)
+fixmainasset.pack(side="left", padx=5)
 
 
 info = """Score Changer - changes score
@@ -512,14 +740,30 @@ Idle Timer Reset - resets the idle timer to 0 every 5 seconds (it is not visible
 
 Live Score - displays the current game score, as the game does not update the score in real time
 
+Main Asset Changer - changes main asset
+
+Drop Timer Changer - changes drop timer, you need to enter the time in hours, minutes and seconds
+
+Show Live Stats - displays the current score, cps and idle timer in real time
+
+Game Options:
+    - Open Game - opens the game
+    - Close Game - closes the game
+    - Crash Game - crashes the game
+    - Restart Game - closes and opens the game again
+
+Fix Options:
+    - Fix Drop Timer - fixes the drop timer
+    - Fix Main Asset - fixes the main asset (Note: it will not work every time)
+
 Notes: 
- - The chosen method is activated every few seconds, 
-   depending on the delay you choose.
- - If you want to run more than one banana instance, 
-   please use multiplesteaminstances.py to run multiple
-   instances of the game.
- - Live Score updates every 1.25 seconds.
- - You need to click for the score to update.
+    - The chosen method is activated every few seconds, 
+      depending on the delay you choose.
+    - If you want to run more than one banana instance, 
+      please use multiplesteaminstances.py to run multiple
+      instances of the game.
+    - Live Score updates every 1.25 seconds.
+    - You need to click for the score to update.
 """
 infobox = customtkinter.CTkTextbox(master=options.tab("Info"), height=230, width=460)
 infobox.insert("0.0", info)
@@ -548,7 +792,6 @@ def on_close():
     thread_manager.stop()
     app.destroy()
     
-thread_manager.start_task("livescore", livescoreshow)
 thread_manager.start_task("githublink", githublinkanimation)
 
 threading.Thread(target=thread_manager.start, daemon=True).start()

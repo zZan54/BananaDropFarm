@@ -1,17 +1,18 @@
 # Banana Drop Farm
 
 ## Description
-Banana Drop Farm is a game cheat for game Banana. This project can change the score in the game and bypass the idle bot check.
+Banana Drop Farm is a game cheat for game Banana. This cheat can change the score in the game, bypass the idle bot check, spoof cps and much more.
 
 ## Showcase
-![Showcase Image](/img/menu_v1.6.png)
+![Showcase Image](/img/menu_v1.7.png)
+![Showcase Image](/img/menu_v1.7_misc.png)
 
 ## Installation
 For users who want to build the menu to a .exe, run `build.bat`. For users who want to use the source code, simply run `setup.bat` and then `python menu.py`.
 
 ## Prerequisites
 - `pymem==1.13.1`
-- `PyYAML==5.4.1`
+- `PyYAML==6.0.1`
 - `psutil==5.9.8`
 - `customtkinter==5.2.2`
 - `pyinstaller` (optional, for those who want to build to .exe)
@@ -37,6 +38,20 @@ You can also install the dependencies listed in `requirements.txt`.
         - **Static** - Sets a static cps value of 15.
 
 - **Idle Timer Reset**: Automatically resets the game's internal idle timer every 5 seconds, preventing AFK detection.
+
+- **Main Asset Changer**: Changes the main asset.
+
+- **Drop Timer Changer**: Changes the drop timer.
+
+- **Game Options**:
+    - Open Game
+    - Close Game
+    - Crash Game
+    - Restart Game
+
+- **Fix Options**:
+    - Fix Drop Timer - Fixes the drop timer
+    - Fix Main Asset - Fixes the main asset
 
 - **Multiple Banana Process Support**: Now supports handling multiple instances of the game.
 
