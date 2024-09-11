@@ -171,7 +171,7 @@ def load_menu():
             for banana_process in banana_processes:
                 try:
                     game = pymem.Pymem(banana_process)
-                    gameModule = module_from_name(game.process_handle, "GameAssembly.dll").lpBaseOfDll
+                    gameModule = module_from_name(game.process_handle, "UnityPlayer.dll").lpBaseOfDll
                     game_instances.append((game, gameModule))
                     bananadropfarmlog.info(f"Successfully found the game process with PID {banana_process}.")
                 except Exception:
@@ -292,12 +292,15 @@ except Exception:
     bananadropfarmlog.warning("An error occurred while trying to set the app icon. Using the default icon.")
     pass
 
-score_addr = 0xFC6EC0
-score_offsets = [0x380, 0x40, 0x370, 0x88, 0xB8, 0x20, 0x108]
-mainasset_addr = 0x1056600
-mainasset_offsets = [0xD60, 0x60, 0x10, 0xF0, 0x4B4]
-droptimer_addr = 0x10670C8
-droptimer_offsets = [0x390, 0xD48, 0x140, 0x70, 0x20]
+score_addr = 0x1BFB420
+score_offsets = [0x30, 0x8, 0x38, 0x58, 0xC0, 0x28, 0x48]
+
+mainasset_addr = 0x1CFF7D0
+mainasset_offsets = [0x8, 0x0, 0xF0, 0x4B4]
+
+droptimer_addr = 0x1C87358
+droptimer_offsets = [0x388, 0x450, 0xD0, 0x80, 0x10, 0x28, 0x20]
+
 droptimerfix_offset = 0x4
 cps_offset = 0x38
 idletimer_offset = 0x34
@@ -549,7 +552,7 @@ def fixdroptimer1():
 
 def fixmainasset1():
     try:
-        game.write_int(GetPtrAddr(game, gameModule + mainasset_addr, mainasset_offsets), 158)
+        game.write_int(GetPtrAddr(game, gameModule + mainasset_addr, mainasset_offsets), 159)
         bananadropfarmlog.info("Successfully fixed the main asset.")
     except Exception:
         bananadropfarmlog.error("An error occurred while trying to fix the main asset.")
