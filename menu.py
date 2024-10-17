@@ -292,8 +292,8 @@ except Exception:
     bananadropfarmlog.warning("An error occurred while trying to set the app icon. Using the default icon.")
     pass
 
-score_addr = 0x1BFB420
-score_offsets = [0x30, 0x8, 0x38, 0x58, 0xC0, 0x28, 0x48]
+score_addr = 0x1C957E0
+score_offsets = [0x30, 0x10, 0x38, 0x58, 0xC0, 0x28, 0x48]
 
 mainasset_addr = 0x1CFF7D0
 mainasset_offsets = [0x8, 0x0, 0xF0, 0x4B4]
@@ -304,7 +304,9 @@ droptimer_offsets = [0x8, 0x10, 0x28, 0x8, 0x58, 0x28, 0x20]
 droptimerfix_offset = 0x4
 cps_offset = 0x38
 idletimer_offset = 0x34
-crash_offset = 0x18
+crash_offset1 = 0x18
+crash_offset2 = 0x20
+crash_offset3 = 0x28
 
 def changescore():
     try:
@@ -464,7 +466,7 @@ def changedroptimer():
             game.write_float(GetPtrAddr(game, gameModule + droptimer_addr, droptimer_offsets), new_time)
             bananadropfarmlog.info(f"Successfully set the drop timer to {new_time}.")
         except Exception:
-            bananadropfarmlog.error(f"An error occurred while trying to set the drop timer to {new_time}.")
+            bananadropfarmlog.error(f"An error occurred while trying to set the main asset to {new_time}.")
             continue
 
 def showlivestats1():
@@ -533,7 +535,9 @@ def closegame1():
 
 def crashgame1():
     try:
-        game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets) + crash_offset, -1)
+        game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets) + crash_offset1, -1)
+        game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets) + crash_offset2, -1)
+        game.write_int(GetPtrAddr(game, gameModule + score_addr, score_offsets) + crash_offset3, -1)
         bananadropfarmlog.info("Successfully crashed the game.")
     except Exception:
         bananadropfarmlog.error("An error occurred while trying to crash the game.")
@@ -552,7 +556,7 @@ def fixdroptimer1():
 
 def fixmainasset1():
     try:
-        game.write_int(GetPtrAddr(game, gameModule + mainasset_addr, mainasset_offsets), 159)
+        game.write_int(GetPtrAddr(game, gameModule + mainasset_addr, mainasset_offsets), 460)
         bananadropfarmlog.info("Successfully fixed the main asset.")
     except Exception:
         bananadropfarmlog.error("An error occurred while trying to fix the main asset.")
