@@ -466,7 +466,7 @@ def changedroptimer():
             game.write_float(GetPtrAddr(game, gameModule + droptimer_addr, droptimer_offsets), new_time)
             bananadropfarmlog.info(f"Successfully set the drop timer to {new_time}.")
         except Exception:
-            bananadropfarmlog.error(f"An error occurred while trying to set the main asset to {new_time}.")
+            bananadropfarmlog.error(f"An error occurred while trying to set the drop timer to {new_time}.")
             continue
 
 def showlivestats1():
